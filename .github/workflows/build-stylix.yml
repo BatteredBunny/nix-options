@@ -1,0 +1,33 @@
+name: Build stylix options.json
+
+on:
+  workflow_call:
+
+jobs:
+  build-stylix:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout brakenium/nix-options-json-wrapper
+        uses: actions/checkout@v6
+        with:
+          repository: brakenium/nix-options-json-wrapper
+          ref: refs/heads/main
+          path: nix-options-json-wrapper
+
+      - name: Install Nix
+        uses: cachix/install-nix-action@v31
+        with:
+          nix_path: nixpkgs=channel:nixpkgs-unstable
+
+      - name: Build stylix options.json
+        run: |
+          mkdir -p site/stylix
+          nix flake metadata --json ./nix-options-json-wrapper# | jq -r '.locks.nodes.stylix.locked.rev' > site/stylix/revision
+          # Use the nix-options-json-wrapper flake to build the options.json for stylix
+          nix build ./nix-options-json-wrapper#hmOptionsJSON -I nixpkgs=channel:nixpkgs-unstable
+          cp result/share/doc/nixos/options.json{,.br} site/stylix/
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: stylix
+          path: site

@@ -35,6 +35,8 @@ jobs:
       file: default.nix
       attribute: docs.json
       runs-on: ubuntu-latest
+  build-stylix-options:
+    uses: ./.github/workflows/build-stylix.yml
   build-nur-packages:
     uses: ./.github/workflows/build-nur-packages.yml
 
@@ -43,6 +45,7 @@ jobs:
     needs:
       - build-darwin-options
       - build-home-manager-options
+      - build-stylix-options
       - build-nur-packages
     steps:
       - name: Merge build artifacts
